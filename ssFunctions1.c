@@ -1,113 +1,121 @@
 #include "simpleshellmain.h"
 
-/*
- * printEnvironment - Print environment variables
- * @envp: Array of environment variables
- *
- * Description: This function prints the environment variables.
- *
- * Return: None
- */
-void printEnvironment(char **envp)
+/**
+  * copyString - copies a string from source to destination
+  * @destination: the destination string
+  * @source: the source string
+  *
+  * Description: This function copies the string pointed by `src` to the
+  * string pointed by `dest`, including the null terminator.
+  *
+  * Return: The pointer to the destination string (`dest`).
+  */
+char *copyString(char *destination, char *source)
 {
-    int i;
+    int index;
+    int length; 
+	
+	length = stringLength(source);
 
-    i = 0;
-    while (envp && envp[i])
-    {
-        printStringAndNewLineToFD(envp[i], 1);
-        i++;
-    }
-}
-
-/*
- * printStringToFD - Print string to a file descriptor
- * @s: String to be printed
- * @fdI: File descriptor
- *
- * Description: This function prints the given string to the specified
- * file descriptor.
- *
- * Return: None
- */
-void printStringToFD(char *s, int fdI)
-{
-    size_t i;
-
-    if (s)
-    {
-        i = 0;
-        while (s[i])
-        {
-            write(fdI, &s[i], 1);
-            i++;
-        }
-    }
-}
-
-/*
- * printStringAndNewLineToFD - Print string followed by a new line to a file descriptor
- * @s: String to be printed
- * @fdI: File descriptor
- *
- * Description: This function prints the given string to the specified file descriptor
- *              and adds a new line at the end.
- *
- * Return: None
- */
-void printStringAndNewLineToFD(char *s, int fdI)
-{
-    size_t i;
-
-    if (s)
-    {
-        i = 0;
-        while (s[i])
-        {
-            write(fdI, &s[i], 1);
-            i++;
-        }
-        write(fdI, "\n", 1);
-    }
-}
-
-/*
- * printError - Print error message
- * @error: Error message
- *
- * Description: This function prints an error message, including the program name
- *              and the corresponding system error message.
- *
- * Return: None
- */
-void printErrorMsg(char *error)
-{
-    (void)error;
-    printStringToFD("./;)", 2);
-    printStringToFD(": ", 2);
-    printStringAndNewLineToFD(strerror(errno), 2);
+    for (index = 0; index <= length; index++)
+	{
+		destination[index] = source[index];
+	}
+    return (destination);
 }
 
 /**
- * freeDoublePointerArray - frees memory of a double pointer array
- * @array: double pointer array to be freed
+ * stringlength - Calculate the length of a string
+ * @str: The input string
  *
- * Description: This function takes a double pointer array as input and frees
- *              the memory occupied by its elements and the array itself.
+ * Description: This function calculates the length of the given string.
  *
- * Return: Nothing is returned.
+ * Return: The length of the string.
  */
-void freeDoublePointerArray(char **array)
+int stringLength(char *str)
 {
-    int i;
+    int length;
+	
+	length = 0;
 
-    i = 0;
-    while (array[i] != NULL)
-    {
-        free(array[i]);
-        i++;
-    }
-    free(array);
+    while (str[length] != '\0')
+	{
+		length++;
+	}
+    return (length);
 }
 
+
+/**
+ * stringCompare - compares two strings to find out if they are exactly the same
+ * @userInput: user input supplied to search for
+ * @compareString: string to compare against
+ * @inputLength: length of userInput
+ *
+ * Description: This function compares two strings and returns 1 if they are equal,
+ * -1 if they are not, and 0 if their lengths are different.
+ *
+ * Return: Returns 1 if the strings are identical, -1 if they differ, and 0 if their lengths are not the same
+ */
+int stringCompare(char *userInput, char *compareString, unsigned int inputLength)
+{
+	unsigned int compareLength;
+	unsigned int i;
+
+	compareLength = stringLength(compareString);
+	if (compareLength != inputLength)
+	{
+		return (-1);
+	}
+	i = 0;
+	while (userInput[i] != '\0' && compareString[i] != '\0')
+	{
+		if (userInput[i] != compareString[i])
+		{
+			return (1);
+		}
+		i++;
+	}
+	return (0);
+}
+
+/**
+  * stringCompareN - compare two strings up to a specified length
+  * @str1: first string
+  * @str2: second string
+  * @length: number of characters to compare
+  *
+  * Description: This function compares two strings up to a specified length.
+  *
+  * Return: Returns 1 if the strings are identical, and -1 otherwise.
+  */
+int stringCompareN(char *str1, char *str2, unsigned int length)
+{
+    unsigned int i;
+
+    i = 0;
+    while (i < length)
+    {
+        if (str1[i] != str2[i])
+		{
+			return (-1);
+		} 
+        i++;
+    }
+    return (1);
+}
+
+/**
+ * weOut_Deuces - Exits the shell program.
+ *
+ * Description: This function is responsible for terminating the shell program
+ * and returning an exit status of -1.
+ * 
+ * Return: Returns -1 to indicate shell exit.
+ *
+ */
+int weOut_Deuces(void)
+{
+	return (-1);
+}
 

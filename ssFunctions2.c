@@ -1,166 +1,187 @@
 #include "simpleshellmain.h"
 
-/*
- * get_executable_path - Retrieves the full path of an executable file
- * @filename: The name of the executable file
+/**
+ * executeChildProcess - Execute a executeChildProcess process.
+ * @executablePath: The full path of the executable.
+ * @commandTokens: An array of tokens representing the command and its arguments.
  *
- * Description: This function searches for the specified executable file
- *              in the directories listed in the PATH environment variable.
- *              If found, it returns the full path; otherwise, it returns NULL.
+ * Description: This function forks a executeChildProcess process and executes the specified
+ * command with the given arguments using the execve system call. It waits for
+ * the executeChildProcess process to complete and returns the status.
  *
- * Return: A dynamically allocated string containing the full path,
- *         or NULL if the file is not found or if memory allocation fails.
+ * Return: 0 on success, -1 on failure.
  */
-
-char *get_executable_path(char *filename)
+int executeChildProcess(char *executablePath, char **commandTokens)
 {
-    char *token, *path, *path_duplicate, *delimiters, *full_path, **path_array;
-    int path_count, i, j;
+	struct executeChildProcessVariables eCPV;
+	eCPV.envp = environ;
 
-    path = getEnvironmentVariable("PATH");
-    path_duplicate = strdup(path);
-    delimiters = ":";
-    path_count = 0, i = 0, j = 0;
-    token = strtok(path_duplicate, delimiters);
-    while (token)
-    {
-        token = strtok(NULL, delimiters);
-        path_count++;
-    }
-    free(path_duplicate);
-    path_array = malloc((sizeof(char *) * (path_count + 1)));
-    if (path_array == NULL)
-    {
-        return (NULL);
-    }
-    token = strtok(path, delimiters);
-    while (token)
-    {
-        path_array[i] = token;
-        token = strtok(NULL, delimiters);
-        i++;
-    }
-    path_array[i] = NULL;
-    while (path_array[j] != NULL)
-    {
-        full_path = malloc(sizeof(char) * (strlen(path_array[j]) + strlen(filename) + 2));
-        if (full_path == NULL)
-        {
-            free(path_array);
-            return (NULL);
-        }
-        sprintf(full_path, "%s/%s", path_array[j], filename);
-        if (access(full_path, F_OK) == 0)
-        {
-            return (full_path);
-        }
-        free(full_path);
-        j++;
-    }
-    free(path_array);
-    return (NULL);
+	eCPV.daBabyPid = fork();
+	if (eCPV.daBabyPid == -1)
+	{
+		write(STDERR_FILENO, "Forking Failed\n", stringLength("Forking Failed\n"));
+		perror("Error");
+
+		exit(EXIT_FAILURE);
+	}
+	if (eCPV.daBabyPid == 0)
+	{   
+		eCPV.whatisgoingonwithexecve = execve(executablePath, commandTokens, eCPV.envp);
+		if (eCPV.whatisgoingonwithexecve == -1)
+		{
+			return (-1);
+		}
+			
+	}
+	else
+		wait(&eCPV.status);
+
+	return (0);
 }
 
-/*
- * find_char_in_string - Find the first occurrence of a character in a string
- * @str: The input string to search
- * @c: The character to find
+/**
+ * getExecutablePath - Get the absolute path of an executable file in the search path
+ * @targetCommand: The target executable command
+ * @result: The buffer to store the result (should be pre-allocated by the caller)
+ * @searchPath: The colon-separated search path
  *
- * Description: This function searches for the first occurrence of the character
- * 'c' in the string 'str'.
+ * Description: This function searches for the executable file specified by targetCommand
+ * in the given searchPath. It returns the absolute path of the first occurrence found.
  *
- * Return: A pointer to the first occurrence of the character in the string,
- * or NULL if the character is not found.
+ * Return: If found, returns the absolute path; otherwise, returns NULL.
  */
-char *find_char_in_string(const char *str, int c)
+char *getExecutablePath(char *targetCommand, char *result, char *searchPath)
 {
-    char *result;
+	struct getExecutablePathVariables gEPV;
 
-    result = find_byte_in_memory(str, c, string_length(str) + 1);
-    return (result);
+	gEPV.operationSize = stringLength(targetCommand);
+	gEPV.originalRouteSize = stringLength(searchPath);
+	gEPV.routeCopy = malloc(sizeof(char) * gEPV.originalRouteSize + 1);
+	if (gEPV.routeCopy == NULL)
+	{
+		write(STDERR_FILENO, "Malloc Failed", stringLength("Malloc Failed"));
+		return (NULL);
+	}
+	copyString(gEPV.routeCopy, searchPath);
+	gEPV.extractedToken = strtok(gEPV.routeCopy, ":");
+	if (gEPV.extractedToken == NULL)
+	{
+		gEPV.extractedToken = strtok(NULL, ":");
+	}
+	while (gEPV.extractedToken != NULL)
+	{
+		gEPV.routeSize = stringLength(gEPV.extractedToken);
+		result = malloc(sizeof(char) * (gEPV.routeSize + gEPV.operationSize) + 2);
+		if (result == NULL)
+		{
+			write(STDERR_FILENO, "Malloc Failed", stringLength("Malloc Failed"));
+			return (NULL);
+		}
+		copyString(result, gEPV.extractedToken);
+		result[gEPV.routeSize] = '/';
+		copyString(result + gEPV.routeSize + 1, targetCommand);
+		result[gEPV.routeSize + gEPV.operationSize + 1] = '\0';
+		if (access(result, X_OK) != 0)
+		{
+			free(result);
+			result = NULL;
+			gEPV.extractedToken = strtok(NULL, ":");
+		}
+		else
+		{
+			break;
+		}
+	}
+	free(gEPV.routeCopy);
+	return (result);
 }
 
-/*
- * find_byte_in_memory - Find the first occurrence of a byte in a block of memory
- * @ptr: The pointer to the memory block
- * @c: The byte to find
- * @n: The number of bytes to search
- *
- * Description: This function searches for the first occurrence of the byte 'c'
- * in the memory block starting at the address 'ptr' for 'n' bytes.
- *
- * Return: A pointer to the first occurrence of the byte in the memory block,
- * or NULL if the byte is not found.
- */
-void *find_byte_in_memory(const void *ptr, int c, size_t n)
+/**
+  * customGetLine - Read a line from a file
+  * @file: The file from which to read the line
+  *
+  * Description: This function reads a line from the specified file.
+  * It allocates memory for the line and returns it.
+  * If an error occurs or the end of the file is reached,
+  * the program exits with success.
+  *
+  * Return: A pointer to the read line.
+  */
+char *customGETLINE(FILE *fil)
 {
-    size_t i;
+	char *line;
+	ssize_t read;
+	size_t len;
 
-    i = 0;
-    if (n == 0)
-    {
-        return (NULL);
-    }
-    while (i < n)
-    {
-        if (((unsigned char *)ptr)[i] == (unsigned char)c)
-        {
-            return (((unsigned char *)ptr) + i);
-        }
-        i++;
-    }
-    return (NULL);
+	line = NULL;
+	len = 0;
+	read = getline(&line, &len, fil);
+	if (read == -1)
+	{
+		free(line);
+		exit(EXIT_SUCCESS);
+	}
+	return (line);
 }
 
-/*
- * string_length - Calculate the length of a string
- * @str: Pointer to the input string
- *
- * Description: This function iterates through the characters of the given string
- *              until it encounters the null terminator, calculating the length.
- *
- * Return: Size of the input string (excluding the null terminator)
- */
-size_t string_length(const char *str)
+/**
+  * doOIs - Check and execute a built-in command.
+  * @tokens: An array of strings representing the command and its arguments.
+  *
+  * Description: This function checks if the provided command is a built-in
+  * command and executes the corresponding action. If the command is not a
+  * built-in command, it returns 1.
+  *
+  * Return: 0 if the built-in command is executed successfully, 1 otherwise.
+  */
+int doOIs(char **tokens)
 {
-    size_t length;
+	struct doOIsVariables dOV;
 
-    length = 0;
+	ois oii[] = {
+		{"exit", weOut_Deuces},
+		{"env", printEnvironments},
+		{NULL, NULL}
+	};
 
-    while (str && str[length] != '\0')
-    {
-        length++;
-    }
+	if (tokens[0] == NULL)
+	{
+		return (1);
+	}
 
-    return (length);
+	dOV.t = stringLength(tokens[0]);
+
+	dOV.s = numberofOIs(oii);
+	for (dOV.i = 0; dOV.i < dOV.s; dOV.i++)
+	{
+		if (stringCompare(tokens[0], oii[dOV.i].name, dOV.t) == 0)
+		{
+			dOV.status = (oii[dOV.i].p)();
+			return (dOV.status);
+		}
+	}
+	return (1);
 }
 
-/*
- * compareStrings - Compares two strings lexicographically
- * @str1: First string to compare
- * @str2: Second string to compare
+/**
+ * numberofOIs - Get the number of built-in commands.
+ * @oi: An array of built-in commands.
  *
- * Description: This function compares the characters of two strings
- * lexicographically until a difference is found or the end of both strings
- * is reached.
+ * Description: This function counts the number of built-in commands
+ * in the specified array.
  *
- * Return: 0 if the strings are equal, a positive value if str1 is greater,
- * or a negative value if str2 is greater.
+ * Return: The number of built-in commands.
  */
-int compareStrings(char *str1, char *str2)
+int numberofOIs(ois oi[])
 {
-    int index;
+    unsigned int count; 
+	
+	count= 0;
 
-    index = 0;
-
-    while (str1[index] != '\0' && str2[index] != '\0')
-    {
-        if (str1[index] != str2[index])
-        {
-            return (str1[index] - str2[index]);
-        }
-        ++index;
-    }
-    return (str1[index] - str2[index]);
+    while (oi[count].name != NULL)
+	{
+		count++;
+	}
+    return (count);
 }
 

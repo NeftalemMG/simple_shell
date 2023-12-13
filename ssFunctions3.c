@@ -1,186 +1,152 @@
 #include "simpleshellmain.h"
 
-/*
- * limitedStringCopy - Copy a string with size limitation
- * @destBuffer: Destination buffer to store the copied string
- * @sourceStr: Source string to be copied
- * @maxSize: Size of the destination buffer
+/**
+ * printEnvironments - Print the environment variables to standard output
  *
- * Description: This function copies at most (maxSize - 1) characters from the
- * source string to the destination buffer and ensures null-termination.
- * If maxSize is 0, no characters are copied, and the function returns 0.
- * The destination buffer must be large enough to accommodate the copied string.
+ * Description: This function iterates through the environment variables
+ * and prints each one to the standard output followed by a newline.
  *
- * Return: The length of the source string (excluding null-terminator).
+ * Return: Always returns 0.
  */
-size_t limitedStringCopy(char *destBuffer, const char *sourceStr, size_t maxSize)
+int printEnvironments(void)
 {
-    size_t i;
-    
-    i = 0;
+    unsigned int index;
 
-    if (maxSize != 0)
+    index = 0;
+    while (environ[index] != NULL)
     {
-        while (sourceStr[i] != '\0' && i < maxSize - 1)
-        {
-            destBuffer[i] = sourceStr[i];
-            i++;
-        }
-        destBuffer[i] = '\0';
+        write(STDOUT_FILENO, environ[index], stringLength(environ[index]));
+        write(STDOUT_FILENO, "\n", 1);
+        index++;
     }
-    return (string_length(sourceStr));
+
+    return (0);
 }
 
-/*
- * find_last_occurrence - Find the last occurrence of a character in a string
- * @str: The input string
- * @c: The character to find
+/**
+ * customPuts - Writes a string to standard output
+ * @stringer: The string to be written
  *
- * Description: This function searches for the last occurrence of the specified
- * character 'c' in the given string 'str'.
+ * Description: This function writes the given string to the standard output.
  *
- * Return: A pointer to the last occurrence of the character in the string,
- *         or NULL if the character is not found.
+ * Return: This function does not return a value.
  */
-char *find_last_occurrence(const char *str, int c)
+void customPuts(char *stringer)
 {
-    int i;
+    unsigned int str_length;
 
-    i = string_length(str);
-    while (i >= 0)
-    {
-        if (str[i] == (char)c)
-            return ((char *)&str[i]);
-        i--;
-    }
-    return (NULL);
+    str_length = stringLength(stringer);
+
+    write(STDOUT_FILENO, stringer, str_length);
 }
 
-/*
- * trimString - Trim leading and trailing characters from a string
- * @str: The input string to be trimmed
- * @cs: The set of characters to be trimmed from the input string
+/**
+ * envWYA - Get the value of an environment variable
+ * @what: Name of the environment variable to retrieve
  *
- * Description: This function trims the leading and trailing characters specified
- *              in the set from the str and returns the trimmed string.
+ * Description: This function retrieves the value of the specified environment
+ * variable. If the variable is not found, it returns NULL.
  *
- * Return: A dynamically allocated string containing the trimmed result.
+ * Return: The value of the environment variable or NULL if not found.
  */
-char *trimString(const char *str, const char *cs)
+char *envWYA(const char *what)
 {
-    size_t l;
-    size_t r;
+	struct envWYAvariables eWv;
 
-    if (!(str) || !(cs))
-    {
-        return (NULL);
-    }
+	eWv.envSize = 0;
+	while (environ[eWv.envSize] != NULL)
+	{
+		eWv.envSize++;
+	}
+	eWv.cpyenv = NULL;
+	eWv.cpyenv = envDup(eWv.cpyenv, eWv.envSize);
 
-    l = 0;
-    r = string_length(str) - 1;
-
-    while (str[l] && find_char_in_string(cs, str[l]))
-    {
-        l++;
-    }
-
-    while (str[r] && find_char_in_string(cs, str[r]) && (r > l))
-    {
-        r--;
-    }
-    return (substring(str, l, r - l + 1));
+	eWv.sz = stringLength((char *)what);
+	eWv.i = 0;
+	while (eWv.cpyenv[eWv.i] != NULL)
+	{
+		eWv.chupapi = eWv.cpyenv[eWv.i];
+		eWv.weigh = stringCompareN((char *)what, eWv.chupapi, eWv.sz);
+		if (eWv.weigh == 1)
+		{
+			eWv.bargain = strtok(eWv.chupapi, "=");
+			eWv.bargain = strtok(NULL, "\n ");
+			if (eWv.bargain == 0)
+			{
+				write(STDERR_FILENO, "No such file or directory \n", stringLength("No such file or directory \n"));
+				exit(EXIT_FAILURE);
+			}
+			eWv.routeSize = stringLength(eWv.bargain);
+			eWv.route = malloc(sizeof(char) * eWv.routeSize + 1);
+			if (eWv.route == NULL)
+			{
+				write(STDERR_FILENO, "Malloc Failed\n", stringLength("Malloc Failed\n"));
+				return (NULL);
+			}
+			eWv.route = copyString(eWv.route, eWv.bargain);
+			byeDoublePointers(eWv.cpyenv, eWv.envSize);
+			return (eWv.route);
+		}
+		eWv.i++;
+	}
+	return (NULL);
 }
 
-/*
- *substring - Extracts a substring from a given string
- *@s: The input string
- *@begin: The starting index of the substring
- *@l: The length of the substring to extract
- *
- *Description: This function extracts a substring from the input string 's' starting
- *at the index 'start' and with a length specified by 'len'. If 'len' exceeds the
- *remaining characters in the string, the resulting substring will be truncated.
- *
- *Return: A dynamically allocated string containing the extracted substring.
- *         It is the caller's responsibility to free the memory.
- */
-char *substring(char const *s, unsigned int begin, size_t l)
+/**
+  * receptionist - Displays a custom prompt based on file descriptor and file status
+  * @fileDescriptor: The file descriptor to check
+  * @fileStatus: The structure containing file status information
+  *
+  * Description: Checks the file status and displays a custom prompt if the file
+  * is a character device.
+  *
+  * Return: None
+  */
+void receptionist(int fileDescriptor, struct stat filestatus)
 {
-    char *result;
-    size_t i;
-    size_t slen;
+	fstat(fileDescriptor, &filestatus);
 
-    if (!s)
-    {
-        return (NULL);
-    }
-    i = 0;
-    slen = strlen(s);
-
-    if (slen < l)
-    {
-        result = (char *)malloc(slen + 1);
-    }
-    else
-    {
-        result = (char *)malloc(l + 1);
-    }
-    if (!result)
-    {
-        return (NULL);
-    }
-
-    while ((begin < slen) && (i < l && i < slen))
-    {
-        result[i] = s[begin];
-        i++;
-        begin++;
-    }
-    result[i] = '\0';
-    return (result);
+	if (S_ISCHR(filestatus.st_mode))
+		customPuts("pleasework :( ");
 }
 
-/*
- * duplicateString - Duplicates a given string
- * @originalString: The string to be duplicated
- *
- * Description: This function takes a string as input and creates a duplicate
- *              copy of it using dynamic memory allocation.
- *
- * Return: A pointer to the duplicated string, or NULL if memory allocation fails.
- */
-char *duplicateString(char *originalString)
+/**
+  * envDup - Duplicate environment variables
+  * @cpyenv: Array of environment variables to be duplicated
+  * @envSize: Number of environment variables in the array
+  *
+  * Description: This function duplicates an array of environment variables
+  * and returns the duplicated array.
+  *
+  * Return: Duplicated array of environment variables
+  */ 
+char **envDup(char **cpyenv, unsigned int envSize)
 {
-    char *duplicate;
-    unsigned int i;
-    unsigned int length;
+	char *mugagno;
+	unsigned int mugagno_length;
+	unsigned int i;
 
-    i = 0;
-    length = 0;
+	cpyenv = malloc(sizeof(char **) * (envSize));
+	if (cpyenv == NULL)
+	{
+		write(STDERR_FILENO, "Malloc Failed\n", stringLength("Malloc Failed\n"));
+		return (NULL);
+	}
+	i = 0;
+	while (i < envSize)
+	{
+		mugagno = environ[i];
+		mugagno_length = stringLength(mugagno);
 
-    if (originalString == NULL)
-    {
-        return (NULL);
-    }
-
-    while (originalString[length] != '\0')
-    {
-        length++;
-    }
-
-    duplicate = (char *)malloc(sizeof(char) * (length + 1));
-    if (duplicate == NULL)
-    {
-        return (NULL);
-    }
-
-    while (i < length)
-    {
-        *(duplicate + i) = originalString[i];
-        i++;
-    }
-    *(duplicate + length) = '\0';
-
-    return (duplicate);
+		cpyenv[i] = malloc(sizeof(char) * mugagno_length + 1);
+		if (cpyenv[i] == NULL)
+		{
+			write(STDERR_FILENO, "Malloc Failed\n", stringLength("Malloc Failed\n"));
+			return (NULL);
+		}
+		copyString(cpyenv[i], environ[i]);
+		i++;
+	}
+	return (cpyenv);
 }
 

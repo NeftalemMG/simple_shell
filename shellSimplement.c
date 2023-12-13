@@ -1,57 +1,64 @@
 #include "simpleshellmain.h"
 
-
-/*
- * main - The main function for the simple shell program
- * @ac: Number of command-line arguments
- * @av: Array of command-line argument strings
- * @envp: Array of environment variable strings
- * 
- * Description: The main function of the simple shell program. It initializes variables,
- * checks for the number of command-line arguments, and then enters an infinite loop to
- * read and process user input.
- * 
- * Return: Always returns 0
+/**
+ * main - Main function for the simple shell
+ *
+ * Description: This function serves as the main loop for the simple shell.
+ * It reads input, processes commands, and executes child processes.
+ *
+ * Return: Always returns 0.
  */
-int main(int ac, char **av, char **envp)
+int main(void)
 {
-	struct shellsimplementVariables ssV;
-	initializeVariables(&ssV);
+	struct stat filestatus;
+	struct mainVariables mV;
+	memset(&filestatus, 0, sizeof(filestatus));
 
-	(void)av; 
-
-	if (ac != 1)
+	while (TRUE)
 	{
-		printStringAndNewLineToFD("ERROR: Invalid number of Arguments", 2);
-		printStringAndNewLineToFD("Usage: ./;)", 2);
-		return (0);
-	}
-	while (1 && ssV.wasitPipped == 27)
-	{
-		readInput(&ssV);
-		if (ssV.theline == NULL)
+		receptionist(STDIN_FILENO, filestatus);
+		mV.line = customGETLINE(stdin);
+		if (stringCompare(mV.line, "\n", 1) == 0)
 		{
-			return (1);
+			free(mV.line);
+			continue;
 		}
-		if (ssV.theline[0] == '\0')
+		mV.tokens = stringChoppedUp(mV.line);
+		if (mV.tokens[0] == NULL)
 		{
-			return (printStringAndNewLineToFD("exit", 2), 1);
+			continue;
 		}
-		ssV.package = trimString(ssV.theline, "	\n");
-		if (!compareStrings(ssV.package, "exit"))
+		mV.soweto = doOIs(mV.tokens);
+		if (mV.soweto == 0 || mV.soweto == -1)
 		{
-			return (1);
+			free(mV.tokens);
+			free(mV.line);
 		}
-		free(ssV.theline);
-		if (!compareStrings(ssV.package, "env"))
+		if (mV.soweto == 0)
 		{
-			printEnvironment(envp);
+			continue;
+		}
+		if (mV.soweto == -1)
+		{
+			_exit(EXIT_SUCCESS);
+		}
+		mV.idibtgog = 0; 
+		mV.path = envWYA("PATH");
+		mV.allait = getExecutablePath(mV.tokens[0], mV.allait, mV.path);
+		if (mV.allait == NULL)
+		{
+			mV.allait = mV.tokens[0];
 		}
 		else
 		{
-			tokenizeInput(&ssV);
-			buildCommandArray(&ssV, envp);
+			mV.idibtgog = 1; 
 		}
+		mV.ready = executeChildProcess(mV.allait, mV.tokens);
+		if (mV.ready == -1)
+		{
+			perror("Error");
+		}		
+		adiosMuchachos(mV.tokens, mV.path, mV.line, mV.allait, mV.idibtgog);
 	}
 	return (0);
 }
