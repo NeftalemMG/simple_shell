@@ -4,7 +4,7 @@
  * printEnvironments - Print the environment variables to standard output
  *
  * Description: This function iterates through the environment variables
- * and prints each one to the standard output followed by a newline.
+ * and prints each one to the standard output followed by a newline!
  *
  * Return: Always returns 0.
  */
