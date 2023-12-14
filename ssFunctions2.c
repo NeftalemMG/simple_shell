@@ -7,7 +7,7 @@
  *
  * Description: This function forks a executeChildProcess process and executes the specified
  * command with the given arguments using the execve system call. It waits for
- * the executeChildProcess process to complete and returns the status.
+ * the executeChildProcess process to complete and returns the status!
  *
  * Return: 0 on success, -1 on failure.
  */
