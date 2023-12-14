@@ -3,7 +3,7 @@
 /**
  * executeChildProcess - Execute a executeChildProcess process.
  * @executablePath: The full path of the executable.
- * @commandTokens: An array of tokens representing the command and its arguments.
+ * @commandTokens: An array of tokens representingthe command and its arguments.
  *
  * Description: This function forks a executeChildProcess process and executes the specified
  * command with the given arguments using the execve system call. It waits for
@@ -25,13 +25,13 @@ int executeChildProcess(char *executablePath, char **commandTokens)
 		exit(EXIT_FAILURE);
 	}
 	if (eCPV.daBabyPid == 0)
-	{   
+	{
 		eCPV.whatisgoingonwithexecve = execve(executablePath, commandTokens, eCPV.envp);
 		if (eCPV.whatisgoingonwithexecve == -1)
 		{
 			return (-1);
 		}
-			
+
 	}
 	else
 		wait(&eCPV.status);
@@ -174,14 +174,14 @@ int doOIs(char **tokens)
  */
 int numberofOIs(ois oi[])
 {
-    unsigned int count; 
-	
-	count= 0;
+	unsigned int count;
 
-    while (oi[count].name != NULL)
+	count = 0;
+
+	while (oi[count].name != NULL)
 	{
 		count++;
 	}
-    return (count);
+	return (count);
 }
 
