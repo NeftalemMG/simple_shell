@@ -5,8 +5,8 @@
   * @array: The double pointer array to be freed.
   * @length: The length of the array.
   *
-  * Description: This function frees the memory allocated for each string in the
-  * array and then frees the memory allocated for the array itself.
+  * Description: This function frees the memory allocated for each string in
+  * the array and then frees the memory allocated for the array itself.
   *
   * Return: No return value.
   */
@@ -62,11 +62,13 @@ char **stringChoppedUp(char *inputString)
   * @path: The path string to be freed
   * @line: The line string to be freed
   * @fullpath: The full path string to be freed (optional)
-  * @flag: An integer flag indicating whether to free fullpath (1 for yes, 0 for no)
+  * @flag: An integer flag indicating whether to
+  * free fullpath (1 for yes, 0 for no)
   *
   * Description: This function frees the memory allocated for various strings
-  * and the tokens array. If the flag is set to 1, it also frees the fullpath string.
-  * 
+  * and the tokens array. If the flag is set to 1,
+  * it also frees the fullpath string.
+  *
   * Return: No return value.
   */
 
