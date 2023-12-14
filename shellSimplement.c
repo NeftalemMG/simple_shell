@@ -1,5 +1,4 @@
 #include "simpleshellmain.h"
-
 /**
  * main - Main function for the simple shell
  *
@@ -12,6 +11,7 @@ int main(void)
 {
 	struct stat filestatus;
 	struct mainVariables mV;
+
 	memset(&filestatus, 0, sizeof(filestatus));
 
 	while (TRUE)
@@ -42,7 +42,7 @@ int main(void)
 		{
 			_exit(EXIT_SUCCESS);
 		}
-		mV.idibtgog = 0; 
+		mV.idibtgog = 0;
 		mV.path = envWYA("PATH");
 		mV.allait = getExecutablePath(mV.tokens[0], mV.allait, mV.path);
 		if (mV.allait == NULL)
@@ -51,15 +51,14 @@ int main(void)
 		}
 		else
 		{
-			mV.idibtgog = 1; 
+			mV.idibtgog = 1;
 		}
 		mV.ready = executeChildProcess(mV.allait, mV.tokens);
 		if (mV.ready == -1)
 		{
 			perror("Error");
-		}		
+		}
 		adiosMuchachos(mV.tokens, mV.path, mV.line, mV.allait, mV.idibtgog);
 	}
 	return (0);
 }
-
