@@ -8,7 +8,7 @@
   * Description: This function copies the string pointed by `src` to the
   * string pointed by `dest`, including the null terminator.
   *
-  * Return: The pointer to the destination string (`dest`).
+  * Return: The pointer to the destination string (`dest`)!
   */
 char *copyString(char *destination, char *source)
 {
