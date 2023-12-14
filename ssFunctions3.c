@@ -10,17 +10,17 @@
  */
 int printEnvironments(void)
 {
-    unsigned int index;
+	unsigned int index;
 
-    index = 0;
-    while (environ[index] != NULL)
-    {
-        write(STDOUT_FILENO, environ[index], stringLength(environ[index]));
-        write(STDOUT_FILENO, "\n", 1);
-        index++;
-    }
+	index = 0;
+	while (environ[index] != NULL)
+	{
+		write(STDOUT_FILENO, environ[index], stringLength(environ[index]));
+		write(STDOUT_FILENO, "\n", 1);
+		index++;
+	}
 
-    return (0);
+	return (0);
 }
 
 /**
@@ -33,11 +33,11 @@ int printEnvironments(void)
  */
 void customPuts(char *stringer)
 {
-    unsigned int str_length;
+	unsigned int str_length;
 
-    str_length = stringLength(stringer);
+	str_length = stringLength(stringer);
 
-    write(STDOUT_FILENO, stringer, str_length);
+	write(STDOUT_FILENO, stringer, str_length);
 }
 
 /**
@@ -119,7 +119,7 @@ void receptionist(int fileDescriptor, struct stat filestatus)
   * and returns the duplicated array.
   *
   * Return: Duplicated array of environment variables
-  */ 
+  */
 char **envDup(char **cpyenv, unsigned int envSize)
 {
 	char *mugagno;
